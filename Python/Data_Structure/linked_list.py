@@ -44,7 +44,9 @@ while ptr != None:
 	      % (ptr.name,ptr.no,ptr.math))
 	ptr = ptr.next
 
-################################
+########################################
+########################################
+#Define function
 def findnode(head,no):
 	ptr = head
 	while ptr != None:
@@ -68,6 +70,25 @@ def insertnode(head, ptr, new_node):
 			new_node.next = ptr.next
 			ptr.next = new_node
 	return head
+
+def invert(x):
+	#Step 1
+	q = None #previous node
+	ptr = x #current node
+	while ptr != None:
+		#第一次while loop時將q變成ptr,q.next設定為None
+		#第二次while loop時將q變成下一個node, q.next設定為上一個node
+		#Step 2
+		r=q #暫存q
+		q=ptr
+		#Step 3
+		ptr=ptr.next #移到下一個node
+		q.next=r
+	return q
+########################################
+########################################
+########################################
+
 
 new_data = student()
 new_data.name = 'Jack'
