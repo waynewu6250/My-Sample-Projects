@@ -6,5 +6,6 @@ List:
 1. Machine Learning
 2. Deep Learning
 3. Natural Language Processing
-4. Python
-5. Scraping
+4. C++
+5. Python
+6. Scraping
