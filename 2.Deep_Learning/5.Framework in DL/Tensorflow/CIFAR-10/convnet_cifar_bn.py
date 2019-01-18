@@ -1,61 +1,11 @@
 import cifar10_input
+cifar10_input.maybe_download_and_extract()
+
 import tensorflow as tf
 import time, os
 from config import opt
-
-
-
-#======== MODEL ==========#
-def conv2d(input, weight_shape, bias_shape, phase_train, visualize=False):
-
-    incoming = weight_shape[0]*weight_shape[1]*weight_shape[2]
-    W = tf.get_variable("W", 
-                        weight_shape, 
-                        initializer=tf.random_normal_initializer(stddev=(2.0/incoming)**0.5))
-    b = tf.get_variable("b",
-                        bias_shape,
-                        initializer=tf.constant_initializer(0))
-    logits = tf.nn.bias_add(tf.nn)
-
-
-def inference(x, keep_prob, phase_train):
-
-    with tf.variable_scope("conv_1"):
-        conv_1 = conv2d(x, [5, 5, 3, 64], [64], phase_train, visualize=True)
-        pool_1 = tf.nn.max_pool(conv_1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
-
-    with tf.variable_scope("conv_2"):
-        conv_2 = conv2d(pool_1, [5, 5, 64, 64], [64], phase_train)
-        pool_2 = tf.nn.max_pool(conv_2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
-
-    with tf.variable_scope("fc_1"):
-
-        dim = 1
-        for d in pool_2.get_shape()[1:].as_list():
-            dim *= d
-
-        pool_2_flat = tf.reshape(pool_2, [-1, dim])
-        fc_1 = layer(pool_2_flat, [dim, 384], [384], phase_train)
-        
-        # apply dropout
-        fc_1_drop = tf.nn.dropout(fc_1, keep_prob)
-
-    with tf.variable_scope("fc_2"):
-
-        fc_2 = layer(fc_1_drop, [384, 192], [192], phase_train)
-        
-        # apply dropout
-        fc_2_drop = tf.nn.dropout(fc_2, keep_prob)
-
-    with tf.variable_scope("output"):
-        output = layer(fc_2_drop, [192, 10], [10], phase_train)
-
-    return output
-
-
-
-
-
+from cifar_model import *
+os.environ["TF_CPP_MIN_LOG_LEVEL"]='3'
 
 with tf.device("/cpu:0"):
 
@@ -75,7 +25,71 @@ with tf.device("/cpu:0"):
                 keep_prob = tf.placeholder(tf.float32) # dropout probability
                 phase_train = tf.placeholder(tf.bool) # training or testing
 
+                # Model
+                output = inference(x,keep_prob,phase_train)
+                # Loss
+                loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=output, labels=tf.cast(y, tf.int64)))
+                # Optimizer
+                optimizer = tf.train.AdamOptimizer(learning_rate=opt.lr).minimize(loss)
+                init = tf.global_variables_initializer()
+                # Accuracy
+                correct_prediction = tf.equal(tf.cast(tf.argmax(output, 1), dtype=tf.int32), y)
+                accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+                
+                tf.summary.scalar("loss", loss)
+                tf.summary.scalar("validation error", (1.0 - accuracy))
+                
+                # Visualization
+                summary_op = tf.summary.merge_all()
+                saver = tf.train.Saver()
 
+                with tf.Session() as sess:
+                    
+                    summary_writer = tf.summary.FileWriter("conv_cifar_bn_logs/",
+                                                        graph=sess.graph)
+                    sess.run(init)
+                    
+                    coord = tf.train.Coordinator()
+                    threads = tf.train.start_queue_runners(coord=coord)
+
+                    for epoch in range(opt.training_epochs):
+
+                        avg_cost = 0.
+                        total_batch = int(cifar10_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN/opt.batch_size)
+                        
+                        # Loop over all batches
+                        for i in range(total_batch):
+
+                            train_x, train_y = sess.run([distorted_images, distorted_labels])
+                            _, cost = sess.run([optimizer, loss], feed_dict={x: train_x, y: train_y, keep_prob: 1, phase_train: True})
+                            avg_cost += cost/total_batch
+                            print("Epoch %d, minibatch %d of %d. Cost = %0.4f." %(epoch, i, total_batch, cost))
+                    
+                        # Display logs per epoch step
+                        if epoch % opt.display_step == 0:
+                            print("Epoch:", '%04d' % (epoch+1), "cost =", "{:.9f}".format(avg_cost))
+
+
+                            # Validation
+                            val_x, val_y = sess.run([val_images, val_labels])
+                            acc = sess.run(accuracy, feed_dict={x: val_x, y: val_y, keep_prob: 1, phase_train: False})
+
+                            print("Validation Error:", (1 - acc))
+
+                            #summary_str = sess.run(summary_op, feed_dict={x: train_x, y: train_y, keep_prob: 1, phase_train: False})
+                            #summary_writer.add_summary(summary_str)
+
+                            saver.save(sess, "conv_cifar_bn_logs/model-checkpoint",global_step=epoch)
+                    
+                    print("Optimization Finished!")
+
+                    val_x, val_y = sess.run([val_images, val_labels])
+                    acc = sess.run(accuracy, feed_dict={x: val_x, y: val_y, keep_prob: 1, phase_train: False})
+
+                    print("Test Accuracy:", acc)
+
+                    coord.request_stop()
+                    coord.join(threads)
 
 
 
