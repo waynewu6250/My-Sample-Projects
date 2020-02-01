@@ -27,7 +27,7 @@ if exist('features_CELL_IMAGES.mat')
 else
     for j=1:32
         disp(['Processing image #' num2str(j) ' (out of 32)...']);
-        im = imread(['data/' num2str(j, '%03d') 'cell.png']);
+        im = imread(['../cells/' num2str(j, '%03d') 'cell.png']);
         im = im(:,:,3); %using the blue channel to compute data
 
         disp('Computing dense SIFT...');
