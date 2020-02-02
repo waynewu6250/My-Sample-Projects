@@ -25,7 +25,7 @@ class LossHistory(Callback):
     def on_batch_end(self, batch, logs={}):
         self.losses.append(logs.get('loss'))
 
-base_path = '../cells/'
+base_path = 'cells/'
 data = []
 anno = []
 
