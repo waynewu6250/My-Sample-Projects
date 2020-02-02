@@ -10,8 +10,25 @@ this approach is often done by following the object detection pipeline (Faster R
 
 2) We could do point-like annotations of objects positions instead, which reduces much computational efforts
 
-Here we will use to annotate.
+Here we will use [labelme](https://github.com/wkentaro/labelme) to annotate. Follow the instructions on https://github.com/wkentaro/labelme#installation, and simply type `labelme` in local terminal. It will pop out a GUI for usage.
 
+Then open image directory and go to Edit > Create Point to annotate each image. Finally save the annotations into JSON format. With example format as follows:
+
+>
+    "shapes": [
+    {
+      "label": "green",
+      "points": [
+        [
+          2.45276872964169,
+          42.34527687296416
+        ]
+      ],
+      "group_id": null,
+      "shape_type": "point",
+      "flags": {}
+    },
+    ...
 
 
 ## 2. Method
@@ -34,6 +51,10 @@ The architecture is similar to U-Net, without information from downsampling part
 
 
 And the code on this project is based on [cell_counting_v2 respository](https://github.com/WeidiXie/cell_counting_v2) from UK Cambridge VGG group and [Object_counting_dmap](https://github.com/NeuroSYS-pl/objects_counting_dmap).
+
+## 3. To USE
+
+
 
 
 <br>
