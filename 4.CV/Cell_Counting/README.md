@@ -1,6 +1,6 @@
 # Bacterial Counting
 
-The repository includes pipeline for counting bacteria and the code for training counting applications. (Keras + Tensorflow)
+The repository includes pipeline for counting bacteria and the code for training counting applications. (Pytorch implementation)
 
 ## 1. Annotation
 
