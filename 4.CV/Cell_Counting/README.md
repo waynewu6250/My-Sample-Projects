@@ -1,6 +1,7 @@
 # Bacterial Counting
 
-The repository includes pipeline for counting bacteria and the code for training counting applications. (Pytorch implementation)
+The repository includes pipeline for counting bacteria and the code for training counting applications. <br>
+(Pytorch implementation)
 
 ## 1. Annotation
 
