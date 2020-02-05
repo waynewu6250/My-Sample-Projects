@@ -47,9 +47,9 @@ def train():
     """Main training process."""
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    train_data = FluoData(opt.h5_path+'train.h5', horizontal_flip=1.0 * opt.h_flip, vertical_flip=1.0 * opt.v_flip)
+    train_data = FluoData(opt.h5_path+'train.h5', horizontal_flip=1.0 * opt.h_flip, vertical_flip=1.0 * opt.v_flip, color=opt.color)
     train_dataloader = DataLoader(train_data, batch_size=opt.batch_size)
-    val_data = FluoData(opt.h5_path+'valid.h5', horizontal_flip=0, vertical_flip=0)
+    val_data = FluoData(opt.h5_path+'valid.h5', horizontal_flip=0, vertical_flip=0, color=opt.color)
     val_dataloader = DataLoader(val_data, batch_size=opt.batch_size)
 
     if opt.model == "UNet":

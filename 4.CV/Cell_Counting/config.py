@@ -7,6 +7,7 @@ class Config:
     train_path = './imgs_to_use/train_imgs/'
     label_path = './imgs_to_use/label_imgs/'
     h5_path = './imgs_to_use/h5_files/'
+    color = 'red'
 
     # size
     train_size = 1
