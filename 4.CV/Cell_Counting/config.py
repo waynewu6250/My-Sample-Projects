@@ -18,6 +18,7 @@ class Config:
     h_flip = 0.9
     v_flip = 0.9
     unet_filters = 64
+    conv = 2
     learning_rate = 0.2
     epochs = 150
 
