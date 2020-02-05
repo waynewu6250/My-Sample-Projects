@@ -13,5 +13,17 @@ class Config:
     val_size = 1
     batch_size = 4
 
+    # hyperparameters
+    model = "UNet" #"FCRN_A"
+    h_flip = 0.9
+    v_flip = 0.9
+    unet_filters = 64
+    learning_rate = 0.2
+    epochs = 150
+
+    plot = True
+
+
+
 
 opt = Config()
