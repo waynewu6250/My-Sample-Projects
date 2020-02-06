@@ -47,9 +47,9 @@ def train():
     """Main training process."""
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    train_data = FluoData(opt.h5_path+'train.h5', horizontal_flip=1.0 * opt.h_flip, vertical_flip=1.0 * opt.v_flip, color=opt.color)
+    train_data = FluoData(opt.h5_path+'train.h5', color=opt.color, horizontal_flip=1.0 * opt.h_flip, vertical_flip=1.0 * opt.v_flip)
     train_dataloader = DataLoader(train_data, batch_size=opt.batch_size)
-    val_data = FluoData(opt.h5_path+'valid.h5', horizontal_flip=0, vertical_flip=0, color=opt.color)
+    val_data = FluoData(opt.h5_path+'valid.h5', color=opt.color, horizontal_flip=0, vertical_flip=0)
     val_dataloader = DataLoader(val_data, batch_size=opt.batch_size)
 
     if opt.model == "UNet":
@@ -116,12 +116,12 @@ def train():
         stats = calc_errors(true_values, predicted_values, len(train_data))
 
         if opt.plot:
-            plot(plots, true_values, predicted_values, train_loss, False)
+            plot(plots[0], true_values, predicted_values, train_loss, False)
         
         print("Training:\t Average loss: {:3.4f}\n \
                Mean error: {:3.3f}\n \
                Mean absolute error: {:3.3f}\n \
-               Error deviation: {:3.3f}".format(train_loss[-1], stats['mean_abs_err'],  stats['std']))
+               Error deviation: {:3.3f}".format(train_loss[-1], stats['mean_err'], stats['mean_abs_err'],  stats['std']))
         
         ###############################################
         ########       Validation Phase        ########
@@ -153,22 +153,27 @@ def train():
         val_stats = calc_errors(val_true_values, val_predicted_values, len(train_data))
 
         if opt.plot:
-            plot(plots, val_true_values, val_predicted_values, val_loss, True)
+            plot(plots[1], val_true_values, val_predicted_values, val_loss, True)
         
         print("Validation:\t Average loss: {:3.4f}\n \
                Mean error: {:3.3f}\n \
                Mean absolute error: {:3.3f}\n \
-               Error deviation: {:3.3f}".format(val_loss[-1], val_stats['mean_abs_err'],  val_stats['std']))
+               Error deviation: {:3.3f}".format(val_loss[-1], val_stats['mean_err'], val_stats['mean_abs_err'],  val_stats['std']))
 
         if val_stats['mean_abs_err'] < best_result:
             best_result = val_stats['mean_abs_err']
-            torch.save(model.state_dict(), '{}.pth'.format())
+            torch.save(model.state_dict(), '{}.pth'.format(opt.model))
 
             print("\nNew best result: {}".format(val_stats['mean_abs_err']))
 
         print("\n", "-"*80, "\n", sep='')
 
     print("[Training done] Best result: {}".format(best_result))
+
+
+if __name__ == '__main__':
+
+    train()
 
 
 

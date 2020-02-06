@@ -10,9 +10,9 @@ class Config:
     color = 'red'
 
     # size
-    train_size = 1
+    train_size = 3
     val_size = 1
-    batch_size = 4
+    batch_size = 1
 
     # hyperparameters
     model = "UNet" #"FCRN_A"

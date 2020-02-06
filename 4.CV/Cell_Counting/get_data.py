@@ -26,6 +26,7 @@ def fill_hdf5(h5_file, img_paths):
         header = ".".join(img_path.split('/')[-1].split('.')[:2])
         label_path = opt.label_path+header+'.label.png'
         
+        
         if not os.path.exists(label_path):
             continue
 
@@ -53,6 +54,7 @@ def get_data():
     
     img_paths = []
     raw_paths = glob.glob(opt.train_path+'*.jpg')
+    
     for img_path in raw_paths:
         header = ".".join(img_path.split('/')[-1].split('.')[:2])
         label_path = opt.label_path+header+'.label.png'
