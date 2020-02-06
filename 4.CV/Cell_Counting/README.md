@@ -54,6 +54,14 @@ The architecture is similar to U-Net, without information from downsampling part
 And the code on this project is based on [cell_counting_v2 respository](https://github.com/WeidiXie/cell_counting_v2) from UK Cambridge VGG group and [Object_counting_dmap](https://github.com/NeuroSYS-pl/objects_counting_dmap).
 
 ## 3. To USE
+All parameters are defined in `config.py`, feel free to modify them!
+
+1. First use the following command to split the original images:
+>
+    python preprocess.py -m split
+2. Then create labels from original annotations:
+>
+    python preprocess.py -m label
 
 
 
