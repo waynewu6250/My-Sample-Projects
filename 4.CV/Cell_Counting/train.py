@@ -56,7 +56,9 @@ def train():
         model = UNet(input_filters=3, filters=opt.unet_filters, N=opt.conv).to(device)
     else:
         model = FCRN_A(input_filters=3, filters=opt.unet_filters, N=opt.conv).to(device)
-    model = torch.nn.DataParallel(model)
+    
+    if os.path.exists('{}.pth'.format(opt.model)):
+        model.load_state_dict(torch.load('{}.pth'.format(opt.model)))
 
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(),
@@ -75,6 +77,7 @@ def train():
         plots = [None] * 2
     
     best_result = float('inf')
+    best_epoch = 0
 
     for epoch in range(opt.epochs):
 
@@ -162,14 +165,15 @@ def train():
 
         if val_stats['mean_abs_err'] < best_result:
             best_result = val_stats['mean_abs_err']
+            best_epoch = epoch
             torch.save(model.state_dict(), '{}.pth'.format(opt.model))
 
             print("\nNew best result: {}".format(val_stats['mean_abs_err']))
 
         print("\n", "-"*80, "\n", sep='')
 
+    print("[Training done] Best epoch: {}".format(best_epoch))
     print("[Training done] Best result: {}".format(best_result))
-
 
 if __name__ == '__main__':
 

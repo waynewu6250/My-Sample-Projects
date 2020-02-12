@@ -59,9 +59,24 @@ All parameters are defined in `config.py`, feel free to modify them!
 1. First use the following command to split the original images:
 >
     python preprocess.py -m split
+
 2. Then create labels from original annotations:
 >
     python preprocess.py -m label
+    
+This will generate image labels and density maps under `ims_to_use/label_imgs` and `imgs_to_use/density_maps`
+
+3. Create train.h5 and valid.h5 for later training
+>
+    python get_data.py
+
+4. Train the model:
+>
+    python train.py
+
+4. Get the counts from the image:
+>
+    python test.py
 
 
 
