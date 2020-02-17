@@ -34,7 +34,7 @@ Then open image directory and go to Edit > Create Point to annotate each image. 
 
 ## 2. Method
 
-In this project we will mainly perform our tasks on two fully-connected neural networks: U-Net and Fully Convolutional Regression Networks. The key idea is first to obtain a density map by applying a convolution with a Gaussian kernel of annotated images. Then we train a fully convolutional network to map an image to a density map, which can be later integrated to get the number of objects.
+In this project we will mainly perform our tasks on two fully convolutional neural networks: U-Net and Fully Convolutional Regression Networks. The key idea is first to obtain a density map by applying a convolution with a Gaussian kernel of annotated images. Then we train a fully convolutional network to map an image to a density map, which can be later integrated to get the number of objects.
 
 The two FCN papers are as follows:
 
