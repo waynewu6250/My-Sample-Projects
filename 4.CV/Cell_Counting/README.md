@@ -78,6 +78,7 @@ This will generate image labels and density maps under `ims_to_use/label_imgs` a
 >
     python test.py
 
+It will generate a density map from the original image and predicted cell counts.
 
 
 
