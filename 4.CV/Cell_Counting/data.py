@@ -10,13 +10,18 @@ from config import opt
 
 class FluoData(Dataset):
 
-    def __init__(self, dataset_path, color, horizontal_flip=0.0, vertical_flip=0.0):
+    def __init__(self, dataset_path, data_type, color, horizontal_flip=0.0, vertical_flip=0.0):
         """mode specifies which bacteria to count: red or green"""
 
         super(FluoData, self).__init__()
         self.h5 = h5py.File(dataset_path, 'r')
         self.images = self.h5['images']
-        self.labels = self.h5['label_red'] if color == 'red' else self.h5['label_green']
+
+        if data_type == 'cell':
+            self.labels = self.h5['labels']
+        elif data_type == 'bacteria':
+            self.labels = self.h5['label_red'] if color == 'red' else self.h5['label_green']
+
         self.horizontal_flip = horizontal_flip
         self.vertical_flip = vertical_flip
 

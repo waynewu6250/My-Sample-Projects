@@ -1,0 +1,3 @@
+*.pth
+cell_h5_files/
+imgs_to_use/h5_files/
