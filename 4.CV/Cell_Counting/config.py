@@ -21,7 +21,7 @@ class Config:
     batch_size = 8 if data_type == 'cell' else 1
 
     # hyperparameters
-    model = "UNet_cell_no" if data_type == 'cell' else "UNet" #"FCRN_A"
+    model = "UNet_cell" if data_type == 'cell' else "UNet" #"FCRN_A"
     h_flip = 0.0
     v_flip = 0.0
     unet_filters = 64

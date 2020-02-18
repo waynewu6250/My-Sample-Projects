@@ -28,7 +28,7 @@ def fill_hdf5(h5_file, img_paths):
 
         label = np.array(Image.open(label_path))
         label = 100.0 * (label[:, :, 0] > 0)
-        #label = ndimage.gaussian_filter(label, sigma=(1, 1), order=0)
+        label = ndimage.gaussian_filter(label, sigma=(1, 1), order=0)
 
         # save data to HDF5 file
         h5_file['images'][i] = image
