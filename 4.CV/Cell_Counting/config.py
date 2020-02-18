@@ -29,7 +29,7 @@ class Config:
     learning_rate = 0.01 if data_type == 'cell' else 0.002
     epochs = 50
 
-    plot = False
+    plot = True
 
     # test_img
     test_path = "imgs_to_use/train_imgs/62x_Salac_Pa14wt_SaPa14wt1-11-10100-110-1_co_SCFM2_tile2x2_4-17-19_z19_t01_p3_m3.tif-2.jpg"
