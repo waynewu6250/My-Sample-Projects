@@ -7,7 +7,7 @@ class Config:
     data_type = 'cell' #'bacteria'
 
     # bacteria images
-    train_path = './imgs_to_use/train_imgs/'
+    train_path = './raw_imgs2/' #'./imgs_to_use/train_imgs/'
     label_path = './imgs_to_use/label_imgs/'
     h5_path = './imgs_to_use/h5_files/'
     color = 'red'

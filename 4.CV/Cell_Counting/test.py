@@ -50,7 +50,7 @@ def test():
     
     label = np.zeros((image.shape[2], image.shape[2], 3))
     label[:,:,0] = out[0][0].cpu().detach().numpy()
-    imageio.imwrite('test_density_map_{}.png'.format(opt.model), label)
+    imageio.imwrite('example/test_density_map_{}.png'.format(opt.model), label)
 
 def test_cell():
     """Count the input image"""
@@ -92,7 +92,7 @@ def test_cell():
     
     label = np.zeros((image.shape[2], image.shape[2], 3))
     label[:,:,0] = out[0][0].cpu().detach().numpy()
-    imageio.imwrite('test_density_map_{}.png'.format(opt.model), label)
+    imageio.imwrite('example/test_density_map_{}.png'.format(opt.model), label)
 
 if __name__ == '__main__':
     if opt.data_type == 'cell':
