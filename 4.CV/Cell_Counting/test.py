@@ -49,7 +49,11 @@ def test():
     print(predicted_counts, real_counts)
     
     label = np.zeros((image.shape[2], image.shape[2], 3))
-    label[:,:,0] = out[0][0].cpu().detach().numpy()
+    if opt.color == 'red':
+        label[:,:,0] = out[0][0].cpu().detach().numpy()
+    else:
+        label[:,:,1] = out[0][0].cpu().detach().numpy()
+        
     imageio.imwrite('example/test_density_map_{}.png'.format(opt.model), label)
 
 def test_cell():

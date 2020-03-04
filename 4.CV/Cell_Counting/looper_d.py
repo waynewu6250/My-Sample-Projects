@@ -68,6 +68,7 @@ class Looper():
 
             # calculate loss and update running loss
             loss = self.loss(result, label)
+            
             self.running_loss[-1] += image.shape[0] * loss.item() / self.size
 
             # update weights if in train mode
@@ -135,8 +136,6 @@ class Looper():
 
     def log(self):
         """Print current epoch results."""
-        print(f"{'Train' if not self.validation else 'Valid'}:\n"
-              f"\tAverage loss: {self.running_loss[-1]:3.4f}\n"
-              f"\tMean error: {self.mean_err:3.3f}\n"
-              f"\tMean absolute error: {self.mean_abs_err:3.3f}\n"
-              f"\tError deviation: {self.std:3.3f}")
+        state = 'Train' if not self.validation else 'Valid'
+        print("{}: Average loss: {:3.4f}, ME: {:3.3f}, MAE: {:3.3f}, std: {:3.3f}".format(state, \
+                   self.running_loss[-1], self.mean_err, self.mean_abs_err, self.std))

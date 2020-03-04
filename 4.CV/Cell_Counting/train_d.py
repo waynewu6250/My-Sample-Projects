@@ -118,8 +118,6 @@ def train():
 
             print(f"\nNew best result: {best_result}")
 
-        print("\n", "-"*80, "\n", sep='')
-
     print("[Training done] Best epoch: {}".format(best_epoch))
     print("[Training done] Best result: {}".format(best_result))
 
