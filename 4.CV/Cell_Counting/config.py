@@ -32,7 +32,7 @@ class Config:
     plot = False
 
     # test_img
-    test_path = "imgs_to_use/train_imgs/62x_Salac_Pa14wt_SaPa14wt=1-1,1-10,100-1,10-1_co_SCFM2_tile2x2_3-13-19_z25_t00_p3_m3.tif-1.jpg"
+    test_path = "imgs_to_use/train_imgs/62x_Salac_Pa14wt_SaPa14wt=1-1,1-10,100-1,10-1_co_SCFM2_tile2x2_3-13-19_z25_t01_p3_m3.tif-1.jpg"
     cell_test_path = "001cell.png"
 
 
