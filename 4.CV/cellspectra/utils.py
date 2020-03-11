@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import h5py
 
 def plot_history(history):
@@ -75,7 +76,7 @@ def data_preprocess(mode, data_to_use):
 
         test_data = data_G2
     
-    return (x_train, x_test, test_data)
+    return (x_train, x_test, test_data, images_G2[0])
 
 
 

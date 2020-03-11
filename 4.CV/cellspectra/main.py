@@ -9,6 +9,8 @@ from sklearn import metrics
 
 from utils import *
 from model import CAE_model
+from model import DCEC
+from config import opt
 
 def pretrain():
 
@@ -34,8 +36,25 @@ def pretrain():
     features = feature_extractor.predict(test_data)
     features = features.squeeze(-1)
 
+def train():
+    
+    data = data_preprocess('single', 'G2')
+    print("1. Get data ready!")
+
+    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, opt.alpha, pretrain=True)
+    model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
+    print("3. Compile model!")
+    
+    model.fit(data, opt)
+
+    # labels = model.cur_label.reshape(data[3].shape[0], data[3].shape[1])
+    # plt.title('Final Output cluster:')
+    # plt.imshow(labels)
+    # plt.savefig('final_2.png')
+
+
 if __name__ == '__main__':
-    pretrain()
+    train()
 
 
 
