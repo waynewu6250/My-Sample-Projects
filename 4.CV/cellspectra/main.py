@@ -41,7 +41,7 @@ def train():
     data = data_preprocess('single', 'G2')
     print("1. Get data ready!")
 
-    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, opt.alpha, pretrain=True)
+    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
     model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
     print("3. Compile model!")
     

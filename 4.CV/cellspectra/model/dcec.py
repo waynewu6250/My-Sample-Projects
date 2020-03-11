@@ -51,12 +51,16 @@ class ClusterLayer(Layer):
 
 class DCEC:
 
-    def __init__(self, input_shape, filters, kernel_size, n_clusters, weights, alpha=1.0, pretrain=True):
+    def __init__(self, input_shape, filters, kernel_size, n_clusters, weights, data, alpha=1.0, pretrain=True):
         
         if pretrain:
             self.autoencoder = load_model('model.h5')
         else:
+            print("Start Pretraining...")
             self.autoencoder = CAE_model(input_shape, filters, kernel_size)
+            (x_train, x_test, test_data, _) = data
+            self.pretrain_model(x_train, x_test)
+            print("Pretraining Complete")
         
         features = self.autoencoder.get_layer('max_pooling1d_6').output
         
@@ -69,8 +73,6 @@ class DCEC:
         if weights:
             self.model.load_weights(weights)
             print("2. Successfully loading weights!!")
-
-        self.pretrain = pretrain
     
     def pretrain_model(self, x_train, x_test):
 
@@ -96,9 +98,6 @@ class DCEC:
     def fit(self, data, opt):
 
         (x_train, x_test, test_data, _) = data
-
-        if not self.pretrain:
-            self.pretrain_model(x_train, x_test)
         
         # Initialize cluster centers by K-Means
         features = self.feature_extractor.predict(test_data)
