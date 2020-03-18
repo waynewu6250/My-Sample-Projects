@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.modules.loss import _Loss
+from torch.autograd import Variable
 
 class SegNet(nn.Module):
 
@@ -32,4 +34,70 @@ class SegNet(nn.Module):
         x = self.conv3(x)
         x = self.bn3(x)
         return x
+
+class DiscriminativeLoss(_Loss):
+    
+    def __init__(self, delta_var=0.5, delta_dist=1.5,
+                 norm=2, alpha=1.0, beta=1.0, gamma=0.001, size_average=True):
+        super(DiscriminativeLoss, self).__init__(size_average)
+
+        self.device = torch.device('cuda') if torch.cuda.is_available else torch.device('cpu')
+        self.delta_var = torch.Tensor([delta_var]).to(self.device)
+        self.delta_dist = torch.Tensor([delta_dist]).to(self.device)
+        self.norm = norm
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
+        assert self.norm in [1, 2]
+
+    def forward(self, input, pred_clusters, n_clusters):
+        return self._discriminative_loss(input, pred_clusters, n_clusters)
+
+    def _discriminative_loss(self, input, pred_clusters, n_clusters):
+        
+        means = torch.zeros((n_clusters, input.shape[1])).to(self.device)
+        
+        for i in range(n_clusters):
+            embeds = input[pred_clusters==i]
+            means[i] = torch.sum(embeds, dim=0) / len(embeds)
+
+        # Variance
+        l_var = 0
+        for i in range(n_clusters):
+            embeds = input[pred_clusters==i]
+            var = torch.sum(torch.clamp(torch.norm((embeds - means[i]), self.norm, 1) - self.delta_var, min=0)**2)
+            l_var += 1/(len(embeds)+1e-5) * var
+        l_var /= n_clusters
+        
+
+        # Distance
+        # l_dist = 0
+        # n_features = means.shape[1]
+        
+        # means_a = means.permute(1,0).unsqueeze(2).expand(n_features, n_clusters, n_clusters)
+        # means_b = means_a.permute(0, 2, 1)
+        # diff = means_a - means_b
+        # diff = torch.sum(diff**2, dim=0)**0.5
+
+        # margin = 2 * self.delta_dist * (1.0 - torch.eye(n_clusters).to(self.device))
+        # margin = Variable(margin).to(self.device)
+        
+        # c_dist = torch.sum(torch.clamp(margin - diff, min=0))
+        # l_dist += c_dist / (2 * n_clusters * (n_clusters - 1))
+
+        # Normalize
+        l_reg = 1 / n_clusters * torch.sum(torch.sum(embeds**2, dim=0)**0.5)
+
+        l_all = self.alpha*l_var + self.gamma*l_reg #+ self.beta*l_dist
+        
+        return l_all
+        
+        
+        
+
+
+    
+    
+
+
 

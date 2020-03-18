@@ -12,7 +12,7 @@ from skimage import segmentation
 import torch.nn.init
 from PIL import Image
 
-from model import SegNet
+from model import SegNet, DiscriminativeLoss
 from config import opt
 
 
@@ -40,6 +40,7 @@ def train():
     model.train()
 
     criterion = torch.nn.CrossEntropyLoss()
+    criterion_d = DiscriminativeLoss()
     optimizer = SGD(model.parameters(), lr = opt.lr, momentum = opt.momentum)
 
     for batch_idx in range(opt.maxIter):
@@ -58,6 +59,8 @@ def train():
         #     labels_per_sp = pred_clusters[label_indices[i]]
         #     pred_clusters[label_indices[i]] = torch.mode(labels_per_sp)[0]
         
+        d_loss = criterion_d(output, pred_clusters, n_clusters)
+        
         pred_clusters = pred_clusters.data.cpu().numpy()
         for i in range(len(label_indices)):
             labels_per_sp = pred_clusters[label_indices[i]]
@@ -70,13 +73,13 @@ def train():
         target = target.to(device)
         target = Variable(target)
         
-        loss = criterion(output, target)
+        loss = criterion(output, target) + opt.lamda*d_loss
         loss.backward()
         optimizer.step()
 
         print (batch_idx, '/', opt.maxIter, ':', n_clusters, loss.item())
 
-        if n_clusters <= opt.min_labels:
+        if n_clusters <= opt.min_labels or loss.item() < 0.1:
             print ("nLabels", n_clusters, "reached minLabels", opt.min_labels, ".")
             break
     
@@ -91,6 +94,8 @@ def train():
     
     path = opt.img_path.split('/')[1].split('.')[0]
     cv2.imwrite( "outputs/{}_out.png".format(path), im_target_rgb)
+
+
 
 
 if __name__ == '__main__':
