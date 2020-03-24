@@ -2,7 +2,7 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.optim import SGD
+from torch.optim import SGD, Adam
 from torch.autograd import Variable
 import torchvision
 import cv2
@@ -47,8 +47,9 @@ def train():
         # forwarding
         optimizer.zero_grad()
         
-        output = model(data)[0]
-        output = output.permute(1,2,0).contiguous().view(-1, opt.nChannel)
+        feats, output = model(data)
+        output = output[0].permute(1,2,0).contiguous().view(-1, opt.nClass)
+        feats = feats[0].permute(1,2,0).contiguous().view(-1, opt.nChannel)
         
         _, pred_clusters = torch.max(output, 1)
         
@@ -59,7 +60,7 @@ def train():
         #     labels_per_sp = pred_clusters[label_indices[i]]
         #     pred_clusters[label_indices[i]] = torch.mode(labels_per_sp)[0]
         
-        d_loss = criterion_d(output, pred_clusters, n_clusters)
+        d_loss = criterion_d(feats, pred_clusters, n_clusters)
         
         pred_clusters = pred_clusters.data.cpu().numpy()
         for i in range(len(label_indices)):
@@ -84,12 +85,14 @@ def train():
             break
     
     # Save output
-    output = model(data)[0]
-    output = output.permute(1,2,0).contiguous().view(-1, opt.nChannel)
+    feats, output = model(data)
+    output = output[0].permute(1,2,0).contiguous().view(-1, opt.nClass)
+    feats = feats[0].permute(1,2,0).contiguous().view(-1, opt.nChannel)
     _, pred_clusters = torch.max(output, 1)
     pred_clusters = pred_clusters.data.cpu().numpy()
+
     label_colors = np.random.randint(255,size=(100,3))
-    im_target_rgb = np.array([label_colors[ c % 100 ] for c in pred_clusters])
+    im_target_rgb = np.array([label_colors[c % 100] for c in pred_clusters])
     im_target_rgb = im_target_rgb.reshape(im.shape).astype(np.uint8)
     
     path = opt.img_path.split('/')[1].split('.')[0]
