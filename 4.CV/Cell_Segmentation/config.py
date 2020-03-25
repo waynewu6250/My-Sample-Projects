@@ -1,6 +1,6 @@
 class Config:
 
-    img_path = 'images/image1.jpg'
+    img_path = 'images/image2.jpg'
 
     # superpixel
     compactness = 100
@@ -13,8 +13,8 @@ class Config:
     nClass = 100
     
     # training
-    model_path = None
-    lr = 0.07 # 0.1
+    model_path = 'model.pth'
+    lr = 0.09 # 0.1
     momentum = 0.9
     maxIter = 200 # 100
     lamda = 0.005

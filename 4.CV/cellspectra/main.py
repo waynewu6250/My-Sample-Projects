@@ -36,16 +36,19 @@ def pretrain():
     features = feature_extractor.predict(test_data)
     features = features.squeeze(-1)
 
-def train():
+def train(mode):
     
     data = data_preprocess('single', 'G2')
     print("1. Get data ready!")
 
-    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
-    model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
-    print("3. Compile model!")
+    if mode == 'dcec':
+        model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+        model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
+        print("3. Compile model!")
+        
+        model.fit(data, opt)
     
-    model.fit(data, opt)
+    elif mode == ''
 
     # labels = model.cur_label.reshape(data[3].shape[0], data[3].shape[1])
     # plt.title('Final Output cluster:')
@@ -54,7 +57,8 @@ def train():
 
 
 if __name__ == '__main__':
-    train()
+    mode = 'dcec'
+    train(mode)
 
 
 

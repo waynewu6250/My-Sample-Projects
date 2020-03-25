@@ -44,7 +44,7 @@ class SegNet(nn.Module):
 class DiscriminativeLoss(_Loss):
     
     def __init__(self, delta_var=0.5, delta_dist=15,
-                 norm=2, alpha=1.0, beta=1.0, gamma=0.001, size_average=True):
+                 norm=2, alpha=1.0, beta=0.01, gamma=0.001, size_average=True):
         super(DiscriminativeLoss, self).__init__(size_average)
 
         self.device = torch.device('cuda') if torch.cuda.is_available else torch.device('cpu')
@@ -83,19 +83,18 @@ class DiscriminativeLoss(_Loss):
         means_a = means.permute(1,0).unsqueeze(2).expand(n_features, n_clusters, n_clusters)
         means_b = means_a.permute(0, 2, 1)
         diff = means_a - means_b
-        diff = torch.sum(diff**2, dim=0)**0.5
+        diff = torch.sum(diff**2+1e-3, dim=0)**0.5
 
         margin = 2 * self.delta_dist * (1.0 - torch.eye(n_clusters).to(self.device))
         margin = Variable(margin).to(self.device)
         
         c_dist = torch.sum(torch.sum(torch.clamp(margin - diff, min=0)))
         l_dist += c_dist / (2 * n_clusters * (n_clusters - 1))
-        
 
         # Normalize
         l_reg = 1 / n_clusters * torch.sum(torch.sum(means**2, dim=1)**0.5)
 
-        l_all = self.alpha*l_var + self.gamma*l_reg #+ self.beta*l_dist
+        l_all = self.alpha*l_var + self.beta*l_dist + self.gamma*l_reg
         
         return l_all
         
