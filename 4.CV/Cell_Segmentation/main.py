@@ -56,9 +56,8 @@ def step(opt, optimizer, model, data, criterion, criterion_d, label_indices, dev
 
         if n_clusters <= opt.min_labels or loss.item() < 0.1:
             print ("nLabels", n_clusters, "reached minLabels", opt.min_labels, ".")
-            torch.save(model.state_dict(), 'model.pth')
             break
-    return model
+    return model, batch_idx
 
 def main(mode):
 
@@ -77,26 +76,66 @@ def main(mode):
     label_indices = [np.where(labels==label_nums[i])[0] for i in range(len(label_nums))]
 
     # Model
-    model = SegNet(opt, data.shape[1])
-    if opt.model_path:
-        model.load_state_dict(torch.load(opt.model_path))
-    model = model.to(device)
-    model.train()
-
-    criterion = torch.nn.CrossEntropyLoss()
-    criterion_d = DiscriminativeLoss()
-    optimizer = SGD(model.parameters(), lr = opt.lr, momentum = opt.momentum)
 
     # Train
     if mode == 'train':
-        model = step(opt, optimizer, model, data, criterion, criterion_d, label_indices, device)
+        
+        best_idx = float('inf')
+        clusters = np.zeros((opt.num_epoch, np.prod(data.shape[-2:])))
+        for epoch in range(opt.num_epoch):
+            
+            print('Epoch {}'.format(epoch))
+            model = SegNet(opt, data.shape[1])
+            model = model.to(device)
+            model.train()
+            criterion = torch.nn.CrossEntropyLoss()
+            criterion_d = DiscriminativeLoss()
+            optimizer = SGD(model.parameters(), lr = opt.lr, momentum = opt.momentum)
 
-    # Save output
-    feats, output = model(data)
-    output = output[0].permute(1,2,0).contiguous().view(-1, opt.nClass)
-    feats = feats[0].permute(1,2,0).contiguous().view(-1, opt.nChannel)
-    _, pred_clusters = torch.max(output, 1)
-    pred_clusters = pred_clusters.data.cpu().numpy()
+            model, batch_idx = step(opt, optimizer, model, data, criterion, criterion_d, label_indices, device)
+            if batch_idx < best_idx:
+                torch.save(model.state_dict(), 'model.pth')
+                best_idx = batch_idx
+
+            feats, output = model(data)
+            output = output[0].permute(1,2,0).contiguous().view(-1, opt.nClass)
+            feats = feats[0].permute(1,2,0).contiguous().view(-1, opt.nChannel)
+            _, pred_clusters = torch.max(output, 1)
+            pred_clusters = pred_clusters.data.cpu().numpy()
+
+            labels = np.unique(pred_clusters)
+            counts = {}
+            for i in pred_clusters:
+                counts[i] = counts.get(i, 0)+1
+            sorts = sorted(counts.items(), key=lambda x: x[1])
+            nums, freqs = zip(*sorts)
+            
+            for i, num in enumerate(nums):
+                pred_clusters[pred_clusters==num] = i
+            
+            clusters[epoch] = pred_clusters
+        
+        for i in range(clusters.shape[1]):
+            labels = clusters[:,i]
+            ulabels = np.unique(labels)
+            hist = np.zeros(len(ulabels))
+            for j in range(len(hist)):
+                hist[j] = len(np.where(labels == ulabels[j])[0])
+            pred_clusters[i] = ulabels[np.argmax(hist)]
+            
+    
+    elif mode == 'test':
+        model = SegNet(opt, data.shape[1])
+        if opt.model_path:
+            model.load_state_dict(torch.load(opt.model_path))
+        model = model.to(device)
+        model.train()
+
+        feats, output = model(data)
+        output = output[0].permute(1,2,0).contiguous().view(-1, opt.nClass)
+        feats = feats[0].permute(1,2,0).contiguous().view(-1, opt.nChannel)
+        _, pred_clusters = torch.max(output, 1)
+        pred_clusters = pred_clusters.data.cpu().numpy()
     
     # Post processing
     labels = np.unique(pred_clusters)
@@ -122,7 +161,12 @@ def main(mode):
 
 
 if __name__ == '__main__':
-    main('test')
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", "--mode", dest="mode", default="train", type=str, metavar='<str>', help="Type the mode for train or test")
+    args = parser.parse_args()
+    
+    main(args.mode)
 
 
 

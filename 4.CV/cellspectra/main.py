@@ -48,7 +48,8 @@ def train(mode):
         
         model.fit(data, opt)
     
-    elif mode == ''
+    elif mode == 'attention':
+        pass
 
     # labels = model.cur_label.reshape(data[3].shape[0], data[3].shape[1])
     # plt.title('Final Output cluster:')
