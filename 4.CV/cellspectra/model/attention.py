@@ -10,9 +10,60 @@ import matplotlib.pyplot as plt
 
 from model.cae import CAE_model
 
+class WeightedEmbedding(Layer):
+    """
+    Compute weighted sum between cluster embeddings and scores
+    return shape (N, H)
+    """
+    def __init__(self, hidden_dim, **kwargs):
+        super(WeightedEmbedding, self).__init__(**kwargs)
+        self.hidden_dim = hidden_dim
+    
+    def compute_mask(self, input_tensor, mask=None):
+        return None
+    
+    def build(self, input_shape):
+        
+        n_clusters = input_shape[1]
+        self.W = self.add_weight(shape=(n_clusters, self.hidden_dim),
+                                 initializer='glorot_uniform', name='W_embedding')
+        self.built = True
 
+    def call(self, input_tensor):
+        return K.dot(input_tensor, self.W)
 
-class Attention:
+class CustomLoss(Layer):
+    """
+    Compute losses: reconstruction loss + negative loss
+    return loss
+    """
+
+    def __init__(self, **kwargs):
+        super(CustomLoss, self).__init__(**kwargs)
+
+    def norm(self, tensor):
+        return K.cast(K.epsilon() + K.sqrt(K.sum(K.square(tensor), axis=-1, keepdims=True)), K.floatx())
+    
+    def call(self, input_tensor):
+
+        z_s, r_s = input_tensor[0], input_tensor[1]
+
+        z_s = z_s / self.norm(z_s)
+        r_s = r_s / self.norm(r_s)
+
+        pos = K.sum(z_s*r_s, axis=-1, keepdims=False)
+        loss = K.cast(K.sum(K.maximum(0., (1. - pos ))), K.floatx())
+        
+        self.add_loss(loss, inputs = input_tensor)
+        return loss
+
+    def compute_mask(self, input_tensor, mask=None):
+        return None
+
+    def compute_output_shape(self, input_shape):
+        return 1
+
+class AttentionModel:
 
     def __init__(self, input_shape, filters, kernel_size, n_clusters, weights, data, alpha=1.0, pretrain=True):
         
@@ -30,8 +81,14 @@ class Attention:
         self.feature_extractor = Model(self.autoencoder.input, features)
         
         features_s = Lambda(lambda x: K.squeeze(x, axis=2))(features)
-        probs = ClusterLayer(n_clusters, alpha, name='cluster')(features_s)
-        self.model = Model(inputs = self.autoencoder.input, outputs=[probs, self.autoencoder.output])
+        preds = Dense(n_clusters)(features_s)
+        scores = Activation('softmax', name='scores')(preds)
+        r_s = WeightedEmbedding(features.shape[1], name='cluster')(scores) # NxH
+        
+        # Calculate loss
+        loss = CustomLoss()([features_s, r_s])
+
+        self.model = Model(inputs = self.autoencoder.input, outputs=loss)
 
         if weights:
             self.model.load_weights(weights)
@@ -49,17 +106,13 @@ class Attention:
         
         self.autoencoder.save('checkpoints-dcec/model.h5')
         self.pretrain = True
+
     
-    @staticmethod
-    def target(q):
-        weight = q ** 2 / q.sum(0)
-        return (weight.T / weight.sum(1)).T
-    
-    def compile(self, loss, optimizer):
-        self.model.compile(loss=loss, optimizer=optimizer)
+    def compile(self, optimizer):
+        self.model.compile(optimizer=optimizer, loss=None)
 
     def fit(self, data, opt):
-
+        
         (x_train, x_test, test_data, _) = data
         
         # Initialize cluster centers by K-Means
@@ -69,47 +122,28 @@ class Attention:
         kmeans_model = KMeans(n_clusters=opt.n_clusters, n_init = 20, random_state=1)
         prev_label = kmeans_model.fit_predict(features)
         self.model.get_layer(name='cluster').set_weights([kmeans_model.cluster_centers_])
+        self.model.get_layer(name='cluster').trainable=False
 
-        # Start deep clustering training
-        index = 0
-        for iter in range(opt.max_iter):
+        # Train with attention
+        self.model.fit(x = x_train,
+              epochs=1,
+              batch_size=100,
+              shuffle=True,
+              validation_split=0.1)
+        self.model.save_weights('checkpoints/attention_model.h5')
 
-            # Update our target distribution
-            if iter % opt.update_interval == 0:
-
-                q, _ = self.model.predict(test_data)
-                p = self.target(q)
-                self.cur_label = np.argmax(q, axis = 1)
-
-                # Check when to stop
-                diff = np.sum(self.cur_label != prev_label).astype(np.float32) / self.cur_label.shape[0]
-                prev_label = np.copy(self.cur_label)
-                if iter > 0 and diff < opt.tol:
-                    print('Difference ', diff, 'is smaller than tol ', opt.tol)
-                    print('Reached tolerance threshold. Stopping training.')
-                    break
-            
-            # train on batch
-            if (index + 1) * opt.batch_size > test_data.shape[0]:
-                loss = self.model.train_on_batch(x=test_data[index * opt.batch_size::],
-                                                 y=[p[index * opt.batch_size::], test_data[index * opt.batch_size::]])
-                index = 0
-            else:
-                loss = self.model.train_on_batch(x=test_data[index * opt.batch_size:(index + 1) * opt.batch_size],
-                                                 y=[p[index * opt.batch_size:(index + 1) * opt.batch_size],
-                                                    test_data[index * opt.batch_size:(index + 1) * opt.batch_size]])
-                index += 1
-
-            # save intermediate model
-            if (iter+1) % opt.save_interval == 0:
-                # save DCEC model checkpoints
-                print('Saving model no.', iter)
-                self.model.save_weights('checkpoints-dcec/dcec_model_' + str(iter) + '.h5')
-                
-                labels = self.cur_label.reshape(data[3].shape[0], data[3].shape[1])
-                plt.title('Final Image')
-                plt.imshow(labels)
-                plt.savefig('graph/dcec/final_{}.png'.format(iter))
+    def predict(self, data):
+        
+        (x_train, x_test, test_data, _) = data
+        
+        test_fn = K.function(self.model.input, self.model.get_layer('scores').output)
+        probs = test_fn(test_data)
+        self.cur_label = np.argmax(probs, axis = 1)
+        
+        labels = self.cur_label.reshape(data[3].shape[0], data[3].shape[1])
+        plt.title('Final Image')
+        plt.imshow(labels)
+        plt.savefig('graph/attention/final.png')
             
 
 

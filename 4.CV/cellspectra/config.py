@@ -9,7 +9,7 @@ class Config:
     # Training
     batch_size = 1024
     n_clusters = 6
-    max_iter = 200
+    max_iter = 100
     update_interval = 10
     save_interval = 10
     tol = 1e-3

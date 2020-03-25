@@ -9,7 +9,7 @@ from sklearn import metrics
 
 from utils import *
 from model import CAE_model
-from model import DCEC
+from model import DCEC, AttentionModel
 from config import opt
 
 def pretrain():
@@ -49,7 +49,14 @@ def train(mode):
         model.fit(data, opt)
     
     elif mode == 'attention':
-        pass
+        model = AttentionModel(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+        model.compile(optimizer='adam')
+        print("3. Compile model!")
+
+        model.fit(data, opt)
+
+        model.predict(data)
+
 
     # labels = model.cur_label.reshape(data[3].shape[0], data[3].shape[1])
     # plt.title('Final Output cluster:')
