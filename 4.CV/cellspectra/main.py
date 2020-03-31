@@ -42,7 +42,7 @@ def train(mode):
     print("1. Get data ready!")
 
     if mode == 'dcec':
-        model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+        model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=False)
         model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
         print("3. Compile model!")
         

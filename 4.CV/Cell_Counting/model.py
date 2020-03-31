@@ -165,7 +165,7 @@ class UNet(nn.Module):
         pool2 = pool(block2)
         block3 = self.block3(pool2)
         pool3 = pool(block3)
-
+        
         # upsampling
         block4 = self.block4(pool3, block3)
         block5 = self.block5(block4, block2)

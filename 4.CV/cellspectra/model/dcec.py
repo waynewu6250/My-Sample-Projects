@@ -62,7 +62,7 @@ class DCEC:
             self.pretrain_model(x_train, x_test)
             print("Pretraining Complete")
         
-        features = self.autoencoder.get_layer('max_pooling1d_6').output
+        features = self.autoencoder.get_layer('max_pooling1d_3').output
         
         self.feature_extractor = Model(self.autoencoder.input, features)
         
@@ -79,9 +79,9 @@ class DCEC:
         self.autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
 
         self.autoencoder.fit(x_train, x_train,
-                epochs=20,
+                epochs=10,
                 batch_size=1024,
-                shuffle=True,
+                shuffle=False,
                 validation_data=(x_test, x_test))
         
         self.autoencoder.save('checkpoints/model.h5')

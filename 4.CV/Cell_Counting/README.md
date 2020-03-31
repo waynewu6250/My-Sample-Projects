@@ -74,25 +74,28 @@ The main structure of the folder is the following:
 
 All parameters are defined in `config.py`, feel free to modify them!
 
-1. First use the following command to split the original images:
+1. First put all the data in imgs_to_use/train_imgs including annotation files.
+
+2. Use the following command to create labels from original annotations:
+>
+    python preprocess.py -m label
+
+3. Then use the following command to split the original images (train, labels) (Remember to change the folder):
 >
     python preprocess.py -m split
 
-2. Then create labels from original annotations:
->
-    python preprocess.py -m label
     
 This will generate image labels and density maps under `ims_to_use/label_imgs` and `imgs_to_use/density_maps`
 
-3. Create train.h5 and valid.h5 for later training
+4. Create train.h5 and valid.h5 for later training
 >
     python get_data.py
 
-4. Train the model:
+5. Train the model:
 >
     python train.py
 
-4. Get the counts from the image:
+6. Get the counts from the image:
 >
     python test.py
 

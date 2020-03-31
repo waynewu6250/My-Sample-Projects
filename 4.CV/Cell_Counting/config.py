@@ -1,24 +1,24 @@
 class Config:
 
     # split images
-    slices = 2
+    slices = 4
 
     # data type
     data_type = 'bacteria' #'cell'
 
     # bacteria images
-    train_path = './imgs_to_use/train_imgs/'
-    label_path = './imgs_to_use/label_imgs/'
-    h5_path = './imgs_to_use/h5_files/'
+    train_path = './imgs_to_use_sub/train_imgs/'
+    label_path = './imgs_to_use_sub/label_imgs/'
+    h5_path = './imgs_to_use_sub/h5_files/'
     color = 'green'
 
     # cell images
     cell_h5_path = 'cell_h5_files/'
 
     # size
-    train_size = 150 if data_type == 'cell' else 20
-    val_size = 50 if data_type == 'cell' else 8
-    batch_size = 8 if data_type == 'cell' else 2
+    train_size = 150 if data_type == 'cell' else 56
+    val_size = 50 if data_type == 'cell' else 40
+    batch_size = 8 if data_type == 'cell' else 10
 
     # hyperparameters
     model = "UNet_cell" if data_type == 'cell' else "UNet" #"FCRN_A"
@@ -32,7 +32,7 @@ class Config:
     plot = False
 
     # test_img
-    test_path = "imgs_to_use/train_imgs/62x_Salac_Pa14wt_SaPa14wt=1-1,1-10,100-1,10-1_co_SCFM2_tile2x2_3-13-19_z25_t01_p3_m3.tif-1.jpg"
+    test_path = "imgs_to_use_sub/train_imgs/62x_Salac_Pa14wt_SaPa14wt=1-1,1-10,100-1,10-1_co_SCFM2_tile2x2_3-13-19_z25_t00_p3_m3.tif-1.png"
     cell_test_path = "001cell.png"
 
 

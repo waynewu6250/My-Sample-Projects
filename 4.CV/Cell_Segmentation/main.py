@@ -6,6 +6,7 @@ from torch.optim import SGD, Adam
 from torch.autograd import Variable
 import torchvision
 import cv2
+import os
 import sys
 import numpy as np
 from skimage import segmentation
@@ -59,12 +60,12 @@ def step(opt, optimizer, model, data, criterion, criterion_d, label_indices, dev
             break
     return model, batch_idx
 
-def main(mode):
+def main(mode, path):
 
     device = torch.device('cuda') if torch.cuda.is_available else torch.device('cpu')
 
     # Image input
-    im = Image.open(opt.img_path)
+    im = Image.open(path)
     im = np.array(im, dtype=np.float32) / 255
     image = np.transpose(im, (2,0,1))
     data = torch.from_numpy(image).unsqueeze(0)
@@ -156,7 +157,9 @@ def main(mode):
     im_target_rgb = np.array([label_colors[cache[c]] for c in pred_clusters])
     im_target_rgb = im_target_rgb.reshape(im.shape).astype(np.uint8)
     
-    path = opt.img_path.split('/')[1].split('.')[0]
+    # change path
+    #path = ".".join(path.split('/')[1].split('.')[:2])
+    path = path.split('/')[1].split('.')[0]
     cv2.imwrite("outputs/{}_out.png".format(path), im_target_rgb)
 
 
@@ -166,7 +169,11 @@ if __name__ == '__main__':
     parser.add_argument("-m", "--mode", dest="mode", default="train", type=str, metavar='<str>', help="Type the mode for train or test")
     args = parser.parse_args()
     
-    main(args.mode)
+    # for i,path in enumerate(os.listdir('images/')):
+    #     print("Processing: ", i)
+    #     main(args.mode, os.path.join('images/',path))
+
+    main(args.mode, opt.img_path)
 
 
 

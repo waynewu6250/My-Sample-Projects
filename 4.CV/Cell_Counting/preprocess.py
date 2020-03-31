@@ -9,12 +9,12 @@ import scipy.ndimage as ndimage
 import argparse
 from config import opt
 
-def split(slices):
+def split(slices, path):
     
-    for img_path in os.listdir('./imgs_to_use2/label_imgs'):
+    for img_path in os.listdir(path):
         if img_path == '.DS_Store' or img_path.find('json') != -1:
             continue
-        img = cv2.imread(os.path.join('./imgs_to_use2/label_imgs', img_path))
+        img = cv2.imread(os.path.join(path, img_path))
         original_size = img.shape[0]
         edge = original_size // slices
         num = original_size / edge + 1
@@ -26,11 +26,11 @@ def split(slices):
             for y in range(slices):
                 sub_img = img[x*edge:x*edge+edge,y*edge:y*edge+edge,:]
                 # for train
-                # cv2.imwrite(os.path.join('./imgs_to_use2/label_imgs', img_path)+'-{}.jpg'.format(count), sub_img)
+                # cv2.imwrite(os.path.join(path, filename)+'.tif-{}.png'.format(count), sub_img)
                 # for label
-                cv2.imwrite(os.path.join('./imgs_to_use2/label_imgs', filename)+'.tif-{}.label.png'.format(count), sub_img)
+                cv2.imwrite(os.path.join(path, filename)+'.tif-{}.label.png'.format(count), sub_img)
                 count += 1
-        os.remove(os.path.join('./imgs_to_use2/label_imgs', img_path))
+        os.remove(os.path.join(path, img_path))
 
 def create_label(train_path, filename):
 
@@ -54,7 +54,7 @@ def create_label(train_path, filename):
     for (y, x) in cache['green']:
         label[int(x)][int(y)][1] = 255.0
         
-    imageio.imwrite(os.path.join('imgs_to_use2/label_imgs', filename+'.png'), label)
+    imageio.imwrite(os.path.join('imgs_to_use_sub/label_imgs', filename+'.png'), label)
 
     # Gaussian Kernel
     red = 100.0 * (label[:,:,0] > 0)
@@ -65,7 +65,7 @@ def create_label(train_path, filename):
     label[:,:,0] = red
     label[:,:,1] = green
 
-    imageio.imwrite(os.path.join('imgs_to_use2/density_maps', filename+'.density_map.png'), label)
+    imageio.imwrite(os.path.join('imgs_to_use_sub/density_maps', filename+'.density_map.png'), label)
 
 
 
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.mode == 'split':
-        split(opt.slices)
+        split(opt.slices, './imgs_to_use_sub/label_imgs')
     elif args.mode == 'label':
         filenames = set([filename.split('.')[0] for filename in os.listdir(opt.train_path)])
         for filename in filenames:

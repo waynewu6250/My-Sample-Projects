@@ -7,6 +7,7 @@ from data import FluoData
 from torch.utils.data import DataLoader
 from model import UNet, FCRN_A
 from config import opt
+from looper_d import Looper
 
 def calc_errors(true_values, predicted_values, size):
     """
@@ -47,18 +48,26 @@ def train():
     """Main training process."""
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-    train_data = FluoData(opt.h5_path+'train.h5', color=opt.color, horizontal_flip=1.0 * opt.h_flip, vertical_flip=1.0 * opt.v_flip)
-    train_dataloader = DataLoader(train_data, batch_size=opt.batch_size)
-    val_data = FluoData(opt.h5_path+'valid.h5', color=opt.color, horizontal_flip=0, vertical_flip=0)
-    val_dataloader = DataLoader(val_data, batch_size=opt.batch_size)
-
-    if opt.model == "UNet":
-        model = UNet(input_filters=3, filters=opt.unet_filters, N=opt.conv).to(device)
-    else:
-        model = FCRN_A(input_filters=3, filters=opt.unet_filters, N=opt.conv).to(device)
+    if opt.data_type == 'bacteria':
+        train_h5pth = opt.h5_path+'train.h5'
+        val_h5pth = opt.h5_path+'valid.h5'
+    elif opt.data_type == 'cell':
+        train_h5pth = opt.cell_h5_path+'train.h5'
+        val_h5pth = opt.cell_h5_path+'valid.h5'
     
-    if os.path.exists('{}.pth'.format(opt.model)):
-        model.load_state_dict(torch.load('{}.pth'.format(opt.model)))
+    train_data = FluoData(train_h5pth, opt.data_type, color=opt.color, horizontal_flip=1.0 * opt.h_flip, vertical_flip=1.0 * opt.v_flip)
+    train_dataloader = DataLoader(train_data, batch_size=opt.batch_size)
+    val_data = FluoData(val_h5pth, opt.data_type, color=opt.color, horizontal_flip=0, vertical_flip=0)
+    val_dataloader = DataLoader(val_data, batch_size=opt.batch_size)
+    
+    if opt.model.find("UNet") != -1:
+        model = UNet(input_filters=3, filters=opt.unet_filters, N=opt.conv).to(device)
+    elif opt.model == "FCRN_A":
+        model = FCRN_A(input_filters=3, filters=opt.unet_filters, N=opt.conv).to(device)
+    model = torch.nn.DataParallel(model)
+    
+    # if os.path.exists('{}.pth'.format(opt.model)):
+    #     model.load_state_dict(torch.load('{}.pth'.format(opt.model)))
 
     criterion = torch.nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(),
@@ -79,6 +88,13 @@ def train():
     best_result = float('inf')
     best_epoch = 0
 
+    train_looper = Looper(model, device, criterion, optimizer,
+                          train_dataloader, len(train_data), plots[0])
+    valid_looper = Looper(model, device, criterion, optimizer,
+                          val_dataloader, len(val_data), plots[1],
+                          validation=True)
+
+
     for epoch in range(opt.epochs):
 
         print("======= epoch {} =======".format(epoch))
@@ -86,91 +102,21 @@ def train():
         ###############################################
         ########         Training Phase        ########
         ###############################################
-        train_loss = []
-        true_values = []
-        predicted_values = []
-
-        for img, label in train_dataloader:
-
-            img = img.to(device)
-            label = label.to(device)
-
-            optimizer.zero_grad()
-
-            out = model(img)
-            loss = criterion(out, label)
-            train_loss.append(img.shape[0] * loss.item() / len(train_data))
-
-            loss.backward()
-            optimizer.step()
-            lr_scheduler.step()
-
-            for true, predicted in zip(label, out):
-                # integrate a density map to get no. of objects
-                # note: density maps were normalized to 100 * no. of objects
-                #       to make network learn better
-                true_counts = torch.sum(true).item() / 100
-                predicted_counts = torch.sum(predicted).item() / 100
-
-                # update current epoch results
-                true_values.append(true_counts)
-                predicted_values.append(predicted_counts)
-
-        stats = calc_errors(true_values, predicted_values, len(train_data))
-
-        if opt.plot:
-            plot(plots[0], true_values, predicted_values, train_loss, False)
-        
-        print("Training:\t Average loss: {:3.4f}\n \
-               Mean error: {:3.3f}\n \
-               Mean absolute error: {:3.3f}\n \
-               Error deviation: {:3.3f}".format(train_loss[-1], stats['mean_err'], stats['mean_abs_err'],  stats['std']))
+        train_looper.run()
+        lr_scheduler.step()
         
         ###############################################
         ########       Validation Phase        ########
         ###############################################
-        val_loss = []
-        val_true_values = []
-        val_predicted_values = []
+        with torch.no_grad():
+            result = valid_looper.run()
 
-        for img, label in val_dataloader:
-
-            img = img.to(device)
-            label = label.to(device)
-
-            out = model(img)
-            loss = criterion(out, label)
-            val_loss.append(img.shape[0] * loss.item() / len(val_data))
-
-            for true, predicted in zip(label, out):
-                # integrate a density map to get no. of objects
-                # note: density maps were normalized to 100 * no. of objects
-                #       to make network learn better
-                true_counts = torch.sum(true).item() / 100
-                predicted_counts = torch.sum(predicted).item() / 100
-
-                # update current epoch results
-                val_true_values.append(true_counts)
-                val_predicted_values.append(predicted_counts)
-
-        val_stats = calc_errors(val_true_values, val_predicted_values, len(train_data))
-
-        if opt.plot:
-            plot(plots[1], val_true_values, val_predicted_values, val_loss, True)
-        
-        print("Validation:\t Average loss: {:3.4f}\n \
-               Mean error: {:3.3f}\n \
-               Mean absolute error: {:3.3f}\n \
-               Error deviation: {:3.3f}".format(val_loss[-1], val_stats['mean_err'], val_stats['mean_abs_err'],  val_stats['std']))
-
-        if val_stats['mean_abs_err'] < best_result:
-            best_result = val_stats['mean_abs_err']
+        if result < best_result:
+            best_result = result
             best_epoch = epoch
             torch.save(model.state_dict(), '{}.pth'.format(opt.model))
 
-            print("\nNew best result: {}".format(val_stats['mean_abs_err']))
-
-        print("\n", "-"*80, "\n", sep='')
+            print(f"\nNew best result: {best_result}")
 
     print("[Training done] Best epoch: {}".format(best_epoch))
     print("[Training done] Best result: {}".format(best_result))
@@ -178,8 +124,3 @@ def train():
 if __name__ == '__main__':
 
     train()
-
-
-
-
-

@@ -75,18 +75,20 @@ class Looper():
             if not self.validation:
                 loss.backward()
                 self.optimizer.step()
-
+            
             # loop over batch samples
             for true, predicted in zip(label, result):
                 # integrate a density map to get no. of objects
                 # note: density maps were normalized to 100 * no. of objects
                 #       to make network learn better
-                true_counts = torch.sum(true).item() / 100
-                predicted_counts = torch.sum(predicted).item() / 100
+                true_counts = torch.sum(true) / 100
+                predicted_counts = torch.sum(predicted) / 100
 
                 # update current epoch results
-                self.true_values.append(true_counts)
-                self.predicted_values.append(predicted_counts)
+                self.true_values.append(true_counts.item())
+                self.predicted_values.append(predicted_counts.item())
+
+            
 
         # calculate errors and standard deviation
         self.update_errors()

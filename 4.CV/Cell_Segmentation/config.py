@@ -1,6 +1,6 @@
 class Config:
 
-    img_path = 'images/image1.jpg'
+    img_path = 'images/image3.jpg'
 
     # superpixel
     compactness = 100
@@ -8,7 +8,7 @@ class Config:
     min_labels = 3
 
     # model
-    nChannel = 100
+    nChannel = 200
     nConv = 2
     nClass = 100
     
