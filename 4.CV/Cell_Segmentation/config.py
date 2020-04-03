@@ -1,6 +1,6 @@
 class Config:
 
-    img_path = 'images/image3.jpg'
+    img_path = 'images/image2.jpg'
 
     # superpixel
     compactness = 100

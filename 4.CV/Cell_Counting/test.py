@@ -64,7 +64,6 @@ def test_cell(path):
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # Image
-    print(path)
     image = np.array(Image.open(path), dtype=np.float32) / 255
     image = torch.Tensor(np.transpose(image, (2,0,1))).unsqueeze(0)
     path = path.split('/')[1]
@@ -105,31 +104,28 @@ def test_cell(path):
 
     return path, predicted_counts, real_counts
 
+
+def write(file, raw_paths):
+    mae = 0
+    with open(file, 'w') as f:
+        f.write("Count Results: \nName \t Predicted Counts \t Real Counts \n")
+        for path in raw_paths:
+            header, predicted_counts, real_counts = test_cell(path)
+            mae += np.abs(predicted_counts-real_counts)
+            f.write('{} : {:.2f}, {:.2f} \n'.format(header, predicted_counts, real_counts))
+        f.write('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
+    print('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
+
+
 if __name__ == '__main__':
     
     if opt.data_type == 'cell':
-        mae = 0
         raw_paths = glob.glob('cells/*.png')
         raw_paths = [path for path in raw_paths if path.find('dots') == -1]
-        with open('example/test_results_cells/results_cells.txt', 'w') as f:
-            f.write("Count Results: \nName \t Predicted Counts \t Real Counts \n")
-            for path in raw_paths:
-                header, predicted_counts, real_counts = test_cell(path)
-                mae += np.abs(predicted_counts-real_counts)
-                f.write('{} : {:.2f}, {:.2f} \n'.format(header, predicted_counts, real_counts))
-            f.write('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
-        print('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
+        write('example/test_results_cells/results_cells.txt', raw_paths)
     
     elif opt.data_type == 'bacteria':
-        mae = 0
         raw_paths = glob.glob(opt.train_path+'*.png')
-        with open('example/test_results/results.txt', 'w') as f:
-            f.write("Count Results: \nName \t Predicted Counts \t Real Counts \n")
-            for path in raw_paths:
-                header, predicted_counts, real_counts = test(path)
-                mae += np.abs(predicted_counts-real_counts)
-                f.write('{} : {:.2f}, {:.2f} \n'.format(header, predicted_counts, real_counts))
-            f.write('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
-        print('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
+        write('example/test_results/results.txt', raw_paths)
         
     
