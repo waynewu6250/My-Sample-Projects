@@ -62,7 +62,7 @@ class DCEC:
             self.pretrain_model(x_train, x_test)
             print("Pretraining Complete")
         
-        features = self.autoencoder.get_layer('max_pooling1d_3').output
+        features = self.autoencoder.get_layer('max_pooling1d_6').output
         
         self.feature_extractor = Model(self.autoencoder.input, features)
         

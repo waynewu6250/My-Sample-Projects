@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn import metrics
+import pickle
 
 from utils import *
 from model import CAE_model
@@ -63,10 +64,51 @@ def train(mode):
     # plt.imshow(labels)
     # plt.savefig('final_2.png')
 
+def test():
+    
+    all_labels = np.zeros((4, 172, 196)) #(6, 140, 278)
+    data = data_preprocess('single', 'G2', True)
+    _, _, _, original_image, images_G = data
+    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+    model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
+    
+    for i in range(4):
+        print("Current image", i)
+        test_data = images_G[i].reshape(np.prod(images_G[i].shape[:2]), -1)[:,:,np.newaxis]
+
+        q, _ = model.model.predict(test_data)
+        cur_label = np.argmax(q, axis = 1)
+        labels = cur_label.reshape(original_image.shape[0], original_image.shape[1])
+        plt.title('Image no. {}'.format(i))
+        plt.imshow(labels)
+        plt.savefig('graph/results-dcec/image1_{}.png'.format(i))
+
+        all_labels[i,:,:] = labels
+
+        # for j in range(5, 8):
+        #     model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.clusters, opt.weights, data, opt.alpha, pretrain=True)
+        #     model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
+
+        #     q, _ = model.predict(test_data)
+        #     cur_label = np.argmax(q, axis = 1)
+        #     labels = cur_label.reshape(original_image.shape[0], original_image.shape[1])
+        #     all_labels[i,j-5,:,:] = labels
+
+        # plt.figure(figsize=(30,10))
+        # for j in range(3):
+        #     plt.subplot(1,3,j+1)
+        #     plt.title('Current cluster number: {}'.format(j+5))
+        #     plt.imshow(all_labels[i,j,:,:])
+        # plt.savefig('graph/results-dcec/image1_{}.png'.format(i))
+    
+    with open('graph/results-dcec/image1.pkl', 'wb') as f:
+        pickle.dump(all_labels, f)
+
 
 if __name__ == '__main__':
     mode = 'dcec'
-    train(mode)
+    #train(mode)
+    test()
 
 
 

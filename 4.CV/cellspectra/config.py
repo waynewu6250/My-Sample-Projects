@@ -14,6 +14,6 @@ class Config:
     save_interval = 10
     tol = 1e-3
 
-    weights = None #'checkpoints/dcec_model_48.h5'
+    weights = 'checkpoints/dcec_model_9.h5'
 
 opt = Config()

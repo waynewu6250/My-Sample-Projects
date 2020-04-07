@@ -1,6 +1,8 @@
 class Config:
 
-    img_path = 'images/image2.jpg'
+    model_mode = 'single'
+    paths = 'images/*.jpg'
+    img_path = 'images/image1.jpg'
 
     # superpixel
     compactness = 100
@@ -13,7 +15,8 @@ class Config:
     nClass = 100
     
     # training
-    model_path = 'model.pth'
+    model_path = 'model_single.pth' if model_mode == 'single' else 'model_all.pth'
+    batch_size = 1
     num_epoch = 5
     lr = 0.09 # 0.1
     momentum = 0.9
