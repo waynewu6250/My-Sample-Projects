@@ -10,14 +10,17 @@ There are two modes to use: \<single>, \<all>
 Original image: <br>
 ![image](images/image3.jpg)
 ![image](images/image2.jpg)
+![image](images/image1.jpg)
 
 Segmentation from model trained with single image: <br>
 ![image](outputs_single/image3.jpg_out.png)
 ![image](outputs_single/image2.jpg_out.png)
+![image](outputs_single/image1.jpg_out.png)
 
 Segmentation from model trained with all images: <br>
 ![image](outputs_all/image3.jpg_out.png)
 ![image](outputs_all/image2.jpg_out.png)
+![image](outputs_all/image1.jpg_out.png)
 
 
 
