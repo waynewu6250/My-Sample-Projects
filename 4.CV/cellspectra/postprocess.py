@@ -114,7 +114,7 @@ def postprocess():
         plot_data(2, i+5, labels2_kmeans[i], spectrum_G2_kmeans[i], 'kmeans')
     # dcec results:
     plot_data(1, 6, labels1_dcec, spectrum_G1_dcec[0], 'dcec')
-    plot_data(2, 5, labels2_dcec, spectrum_G2_dcec[0], 'dcec')
+    plot_data(2, 6, labels2_dcec, spectrum_G2_dcec[0], 'dcec')
 
     ################################################
 

@@ -46,12 +46,12 @@ def data_preprocess(mode, data_to_use, return_all=False):
     # Data Preprocessing
     if data_to_use == "G1":
 
-        with open('image2data.pkl', 'rb') as f:
+        with open('image1data.pkl', 'rb') as f:
             images_G = pickle.load(f)
     
     elif data_to_use == "G2":
 
-        with open('image1data.pkl', 'rb') as f:
+        with open('image2data.pkl', 'rb') as f:
             images_G = pickle.load(f)
 
     # Take the first N image
