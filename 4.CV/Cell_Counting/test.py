@@ -105,15 +105,28 @@ def test_cell(path):
     return path, predicted_counts, real_counts
 
 
-def write(file, raw_paths):
+def write(file, raw_paths, func):
     mae = 0
+    preds = []
+    reals = []
     with open(file, 'w') as f:
         f.write("Count Results: \nName \t Predicted Counts \t Real Counts \n")
         for path in raw_paths:
-            header, predicted_counts, real_counts = test_cell(path)
+            header, predicted_counts, real_counts = func(path)
             mae += np.abs(predicted_counts-real_counts)
             f.write('{} : {:.2f}, {:.2f} \n'.format(header, predicted_counts, real_counts))
+            preds.append(predicted_counts)
+            reals.append(real_counts)
         f.write('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
+
+        # Save figure
+        plt.scatter(preds, reals)
+        plt.plot(range(len(preds)), range(len(preds)), color='red')
+        plt.title('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
+        plt.xlabel('Predicted Counts')
+        plt.ylabel('Real Counts')
+        plt.savefig('example/test_results/comparison.png')
+
     print('Mean Absolute Error: {:.2f}'.format(mae/len(raw_paths)))
 
 
@@ -122,10 +135,10 @@ if __name__ == '__main__':
     if opt.data_type == 'cell':
         raw_paths = glob.glob('cells/*.png')
         raw_paths = [path for path in raw_paths if path.find('dots') == -1]
-        write('example/test_results_cells/results_cells.txt', raw_paths)
+        write('example/test_results_cells/results_cells.txt', raw_paths, test_cell)
     
     elif opt.data_type == 'bacteria':
         raw_paths = glob.glob(opt.train_path+'*.png')
-        write('example/test_results/results.txt', raw_paths)
+        write('example/test_results/results.txt', raw_paths, test)
         
     

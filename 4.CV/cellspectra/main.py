@@ -13,30 +13,6 @@ from model import CAE_model
 from model import DCEC, AttentionModel
 from config import opt
 
-def pretrain():
-
-    (x_train, x_test, test_data) = data_preprocess('single', 'G2')
-
-    autoencoder = CAE_model()
-    autoencoder.summary()
-
-    autoencoder.compile(optimizer='adam', loss='binary_crossentropy')
-    #autoencoder.compile(optimizer='sgd', loss='mean_squared_error')
-
-    #autoencoder = load_model('model.h5')
-
-    # Pretrain the model
-    history = autoencoder.fit(x_train, x_train,
-                epochs=20,
-                batch_size=1024,
-                shuffle=True,
-                validation_data=(x_test, x_test))
-    
-    # Extract features
-    feature_extractor = Model(autoencoder.input, autoencoder.get_layer('max_pooling1d_3').output)
-    features = feature_extractor.predict(test_data)
-    features = features.squeeze(-1)
-
 def train(mode):
 
     """
@@ -44,7 +20,7 @@ def train(mode):
     image2data.pkl: images_G2 for image (6, 140, 278)
     """
     
-    data = data_preprocess('single', 'G2')
+    data = data_preprocess('single', 'G1')
     print("1. Get data ready!")
 
     if mode == 'dcec':
@@ -69,15 +45,15 @@ def train(mode):
     # plt.imshow(labels)
     # plt.savefig('final_2.png')
 
-def test():
+def test(shape, mode, rounds):
     
-    all_labels = np.zeros((6, 140, 278)) #(4, 172, 196)
-    data = data_preprocess('single', 'G2', True)
+    all_labels = np.zeros(shape)
+    data = data_preprocess('single', mode, True)
     _, _, _, original_image, images_G = data
     model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
     model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
     
-    for i in range(6):
+    for i in range(rounds):
         print("Current image", i)
         test_data = images_G[i].reshape(np.prod(images_G[i].shape[:2]), -1)[:,:,np.newaxis]
 
@@ -86,7 +62,7 @@ def test():
         labels = cur_label.reshape(original_image.shape[0], original_image.shape[1])
         plt.title('Image no. {}'.format(i))
         plt.imshow(labels)
-        plt.savefig('graph/results-dcec/image2_{}.png'.format(i))
+        plt.savefig('graph/results-dcec/cluster_num_6/image{}_{}.png'.format(mode, i))
 
         all_labels[i,:,:] = labels
 
@@ -106,14 +82,15 @@ def test():
         #     plt.imshow(all_labels[i,j,:,:])
         # plt.savefig('graph/results-dcec/image1_{}.png'.format(i))
     
-    with open('graph/results-dcec/image2.pkl', 'wb') as f:
+    with open('graph/results-dcec/cluster_num_6/image{}.pkl'.format(mode), 'wb') as f:
         pickle.dump(all_labels, f)
 
 
 if __name__ == '__main__':
     mode = 'dcec'
-    #train(mode)
-    test()
+    train(mode)
+    #test((4, 172, 196), 'G1', 4)
+    #test((6, 140, 278), 'G2', 6)
 
 
 

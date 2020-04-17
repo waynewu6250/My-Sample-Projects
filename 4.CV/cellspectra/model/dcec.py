@@ -54,7 +54,7 @@ class DCEC:
     def __init__(self, input_shape, filters, kernel_size, n_clusters, weights, data, alpha=1.0, pretrain=True):
         
         if pretrain:
-            self.autoencoder = load_model('model_2.h5')
+            self.autoencoder = load_model('model.h5') # change here for different images G1 or G2
         else:
             print("Start Pretraining...")
             self.autoencoder = CAE_model(input_shape, filters, kernel_size)
@@ -62,7 +62,7 @@ class DCEC:
             self.pretrain_model(x_train, x_test)
             print("Pretraining Complete")
         
-        features = self.autoencoder.get_layer('max_pooling1d_3').output
+        features = self.autoencoder.get_layer('max_pooling1d_6').output # change here for different images G1 or G2 (6 or 3)
         
         self.feature_extractor = Model(self.autoencoder.input, features)
         
@@ -141,12 +141,12 @@ class DCEC:
             if (iter+1) % opt.save_interval == 0:
                 # save DCEC model checkpoints
                 print('Saving model no.', iter)
-                self.model.save_weights('checkpoints/dcec_model_2_' + str(iter) + '.h5')
+                self.model.save_weights('checkpoints/dcec_model_' + str(iter) + '.h5')
                 
                 labels = self.cur_label.reshape(data[3].shape[0], data[3].shape[1])
                 plt.title('Final Image')
                 plt.imshow(labels)
-                plt.savefig('graph/dcec/final_2_{}.png'.format(iter))
+                plt.savefig('graph/dcec/final_{}.png'.format(iter))
             
 
 

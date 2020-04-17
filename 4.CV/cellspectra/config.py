@@ -8,12 +8,12 @@ class Config:
 
     # Training
     batch_size = 1024
-    n_clusters = 6
-    max_iter = 100
+    n_clusters = 7
+    max_iter = 20
     update_interval = 10
     save_interval = 10
     tol = 1e-3
 
-    weights = 'checkpoints/dcec_model_2_9.h5'
+    weights = 'checkpoints/dcec_model_9.h5'
 
 opt = Config()
