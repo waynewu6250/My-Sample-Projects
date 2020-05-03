@@ -51,10 +51,10 @@ class ClusterLayer(Layer):
 
 class DCEC:
 
-    def __init__(self, input_shape, filters, kernel_size, n_clusters, weights, data, alpha=1.0, pretrain=True):
+    def __init__(self, input_shape, filters, kernel_size, n_clusters, weights, data, alpha=1.0, pretrain=None, layer='max_pooling1d_6'):
         
         if pretrain:
-            self.autoencoder = load_model('model.h5') # change here for different images G1 or G2
+            self.autoencoder = load_model(pretrain) # change here for different images G1 or G2
         else:
             print("Start Pretraining...")
             self.autoencoder = CAE_model(input_shape, filters, kernel_size)
@@ -62,7 +62,7 @@ class DCEC:
             self.pretrain_model(x_train, x_test)
             print("Pretraining Complete")
         
-        features = self.autoencoder.get_layer('max_pooling1d_6').output # change here for different images G1 or G2 (6 or 3)
+        features = self.autoencoder.get_layer(layer).output # change here for different images G1 or G2 (6 or 3)
         
         self.feature_extractor = Model(self.autoencoder.input, features)
         

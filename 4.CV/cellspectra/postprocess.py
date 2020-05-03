@@ -18,9 +18,9 @@ def postprocess():
     print("Kmeans results for image2 with shape: ", labels2_kmeans.shape)
 
     # dcec results
-    with open('graph/results-dcec/image1.pkl', 'rb') as f:
+    with open('graph/results-dcec/cluster_num_6/imageG1.pkl', 'rb') as f:
         labels1_dcec = pickle.load(f)
-    with open('graph/results-dcec/image2.pkl', 'rb') as f:
+    with open('graph/results-dcec/cluster_num_6/imageG2.pkl', 'rb') as f:
         labels2_dcec = pickle.load(f)
     print("Deep Embedding Clustering results for image1 with shape: ", labels1_dcec.shape)
     print("Deep Embedding Clustering for image2 with shape: ", labels2_dcec.shape)
@@ -128,6 +128,7 @@ def postprocess():
                'spectrum1_dcec': spectrum_G1_dcec,
                'spectrum2_dcec': spectrum_G2_dcec,
                }
+    
     with open('graph/results.pkl', 'wb') as f:
         pickle.dump(results, f)
 
@@ -151,7 +152,7 @@ def plot_data(image_number, cluster_num, labels, spectrum, type):
         plt.title('Spectrum: Current cluster number: {}'.format(i))
         plt.plot(range(1600), spectrum[i])
 
-    plt.savefig('./graph/results-{}/image{}_cluster_num_{}.jpg'.format(type, image_number, cluster_num))
+    plt.savefig('./graph/results-{}/cluster_num_{}/image{}_cluster_num_{}.jpg'.format(type, cluster_num, image_number, cluster_num))
     plt.show()
 
 if __name__ == '__main__':

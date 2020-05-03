@@ -13,25 +13,25 @@ from model import CAE_model
 from model import DCEC, AttentionModel
 from config import opt
 
-def train(mode):
+def train(model_type, mode, pretrain, layer):
 
     """
     image1data.pkl: images_G1 for image (4, 172, 196)
     image2data.pkl: images_G2 for image (6, 140, 278)
     """
     
-    data = data_preprocess('single', 'G1')
+    data = data_preprocess('single', mode)
     print("1. Get data ready!")
 
-    if mode == 'dcec':
-        model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+    if model_type == 'dcec':
+        model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=pretrain, layer=layer)
         model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
         print("3. Compile model!")
         
         model.fit(data, opt)
     
-    elif mode == 'attention':
-        model = AttentionModel(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+    elif model_type == 'attention':
+        model = AttentionModel(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=pretrain)
         model.compile(optimizer='adam')
         print("3. Compile model!")
 
@@ -45,12 +45,13 @@ def train(mode):
     # plt.imshow(labels)
     # plt.savefig('final_2.png')
 
-def test(shape, mode, rounds):
+def test(shape, mode, rounds, pretrain, layer):
     
     all_labels = np.zeros(shape)
     data = data_preprocess('single', mode, True)
     _, _, _, original_image, images_G = data
-    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=True)
+    model = DCEC(opt.input_shape, opt.filters, opt.kernel_size, opt.n_clusters, opt.weights, data, opt.alpha, pretrain=pretrain, layer=layer)
+    
     model.compile(loss=['kld', 'binary_crossentropy'], optimizer='adam')
     
     for i in range(rounds):
@@ -87,10 +88,23 @@ def test(shape, mode, rounds):
 
 
 if __name__ == '__main__':
-    mode = 'dcec'
-    train(mode)
-    #test((4, 172, 196), 'G1', 4)
-    #test((6, 140, 278), 'G2', 6)
+    model_type = 'dcec'
+    mode = 'G1'
+    
+    if mode == 'G1':
+        shape = (4, 172, 196)
+        rounds = 4
+        pretrain = 'model.h5'
+        layer = 'max_pooling1d_6'
+    elif mode == 'G2':
+        shape = (6, 140, 278)
+        rounds = 6
+        pretrain = 'model_2.h5'
+        layer = 'max_pooling1d_3'
+
+
+    #train(model_type, mode, pretrain, layer)
+    test(shape, mode, rounds, pretrain, layer)
 
 
 
