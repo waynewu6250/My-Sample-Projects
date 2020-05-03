@@ -11,17 +11,17 @@ Image 1
 
 <img src="results/image1.png" alt="drawing" width="200"/> 
 
-<img src="results/results-dcec/image1_results.png" alt="drawing" width="240"/>
+<img src="results/results-dcec/image1_results.png" alt="drawing" width="350"/>
 
 Image 2
 
 <img src="results/image2.png" alt="drawing" width="350"/>
 
-<img src="results/results-dcec/image2_results.png" alt="drawing" width="240"/>
+<img src="results/results-dcec/image2_results.png" alt="drawing" width="350"/>
 
 Mean spectra for each cluster:
 
-<img src="results/results-dcec/image1_cluster_num_5.jpg" alt="drawing" width="500"/>
+<img src="results/results-dcec/image1_cluster_num_5.jpg" alt="drawing" width=""/>
 
 
 
