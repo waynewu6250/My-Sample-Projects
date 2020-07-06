@@ -88,23 +88,28 @@ def test(shape, mode, rounds, pretrain, layer):
 
 
 if __name__ == '__main__':
-    model_type = 'dcec'
-    mode = 'G1'
+    import argparse
+    parser = argparse.ArgumentParser(description='Put arguments for train, predict')
+    parser.add_argument('-m', '--mode', default='train', dest='mode')
+    parser.add_argument('-mo', '--model', default='dcec', dest='model_type')
+    parser.add_argument('-i', '--image', default='G1', dest='image_mode')
+    args = parser.parse_args()
     
-    if mode == 'G1':
+    if args.image_mode == 'G1':
         shape = (4, 172, 196)
         rounds = 4
         pretrain = 'model.h5'
         layer = 'max_pooling1d_6'
-    elif mode == 'G2':
+    elif args.image_mode == 'G2':
         shape = (6, 140, 278)
         rounds = 6
         pretrain = 'model_2.h5'
         layer = 'max_pooling1d_3'
 
-
-    #train(model_type, mode, pretrain, layer)
-    test(shape, mode, rounds, pretrain, layer)
+    if args.mode == 'train':
+        train(args.model_type, args.image_mode, pretrain, layer)
+    elif args.mode == 'test':
+        test(shape, args.image_mode, rounds, pretrain, layer)
 
 
 

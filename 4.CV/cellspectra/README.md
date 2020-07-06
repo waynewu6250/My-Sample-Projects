@@ -21,25 +21,37 @@ Image 2
 
 Mean spectra for each cluster:
 
-<img src="results/results-dcec/image1_cluster_num_5.jpg" alt="drawing" width="350"/>
+<img src="results/results-dcec/image1_cluster_num_5.jpg" alt="drawing" width="500"/>
 
 
 
 # To use the codes
 
-**Autoencoder + Kmeans analysis**
+## Autoencoder + Kmeans analysis
 
-Please follow the pipeline in jupyter notebooks for [image1](./autoencoder.ipynb) and [image2](./autoencoder_2.ipynb)
+Please follow the pipeline in jupyter notebooks: <br> 
+1. [image1 notebook](./autoencoder.ipynb)
+2. [image2 notebook](./autoencoder_2.ipynb)
 
-**Deep Embedding Clustering analysis**
+## Deep Embedding Clustering analysis
 
-1. Change ``model_type`` and ``mode`` for image1 or image2 <br>
-2. Check parameters in ``config.py``
-2. To train: in ``main.py`` use train <br>
-   To save results: in ``main.py`` use test; it will save in ``graph/results-dcec``
+Currently we have two images for training and testing: G1 and G2. <br>
+All training parameters are specified in ``config.py``.
+
+* To train
     >
-        python main.py
-4. To save figures that compares spectra results in each cluster, run the following. It will save all the results in ``graph/results.pkl`` and figures in ``graph/results-dcec/`` and ``graph/results-kmeans/``.
+        python main.py -m train \
+                    -i [G1/G2]
+* To test
+    >
+        python main.py -m test \
+                    -i [G1/G2]
+
+    It will save images in ``graph/results-dcec``.
+
+* To save figures and compare
+
+    To save figures that compares spectra results in each cluster, run the following. It will save all the results in ``graph/results.pkl`` and figures in ``graph/results-dcec/`` and ``graph/results-kmeans/``.
     >
         python postprocess.py
     
