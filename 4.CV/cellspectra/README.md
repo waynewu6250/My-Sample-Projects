@@ -9,9 +9,9 @@ The results are stored in ``results/``
 
 Image 1
 
-<img src="results/image1.png" alt="drawing" width="200"/> 
+<img src="results/image1.png" alt="drawing" width="100"/> 
 
-<img src="results/results-dcec/image1_results.png" alt="drawing" width="350"/>
+<img src="results/results-dcec/image1_results.png" alt="drawing" width="100"/>
 
 Image 2
 
