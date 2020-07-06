@@ -9,9 +9,9 @@ The results are stored in ``results/``
 
 Image 1
 
-<img src="results/image1.png" alt="drawing" width="100"/> 
+<img src="results/image1.png" alt="drawing" width="200"/> 
 
-<img src="results/results-dcec/image1_results.png" alt="drawing" width="100"/>
+<img src="results/results-dcec/image1_results.png" alt="drawing" width="200"/>
 
 Image 2
 
@@ -21,7 +21,7 @@ Image 2
 
 Mean spectra for each cluster:
 
-<img src="results/results-dcec/image1_cluster_num_5.jpg" alt="drawing" width=""/>
+<img src="results/results-dcec/image1_cluster_num_5.jpg" alt="drawing" width="200"/>
 
 
 
