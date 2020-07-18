@@ -42,7 +42,7 @@ def crop_image3(data, N_H, N_W):
     return images
 
 def data_preprocess(mode, data_to_use, return_all=False):
-
+    
     # Data Preprocessing
     if data_to_use == "G1":
 
